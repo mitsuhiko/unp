@@ -14,6 +14,10 @@ $ unp_
 
     $ unp myarchive.tar.gz
 
+  To install you can use pipsi:
+
+    $ pipsi install unp
+
   Supports the following archives:
 
   - 7zip Archives (*.7z)
