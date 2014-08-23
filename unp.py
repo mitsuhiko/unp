@@ -293,6 +293,7 @@ class TarXZUnpacker(UnpackerBase):
     filename_patterns = ['*.tar.xz']
     executable = 'unxz'
     args = ['-c', FILENAME]
+    brew_package = 'xz'
 
     def real_unpack(self, dst):
         args, cwd = self.get_args_and_cwd(dst)
@@ -338,6 +339,7 @@ class XZUnpacker(SingleInplaceUnpacker):
     filename_patterns = ['*.xz']
     executable = 'unxz'
     args = ['-c', FILENAME]
+    brew_package = 'xz'
     mimetypes = ['application/x-xz']
 
 
