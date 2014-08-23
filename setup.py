@@ -4,7 +4,7 @@ from setuptools import setup
 setup(
     name='unp',
     license='BSD',
-    version='0.1',
+    version='0.2',
     url='http://github.com/mitsuhiko/unp',
     author='Armin Ronacher',
     author_email='armin.ronacher@active-4.com',

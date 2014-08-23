@@ -288,6 +288,33 @@ class TarBz2Unpacker(Unpacker):
 
 
 @register_unpacker
+class TarXZUnpacker(UnpackerBase):
+    name = 'XZ Compressed Tarballs'
+    filename_patterns = ['*.tar.xz']
+    executable = 'unxz'
+    args = ['-c', FILENAME]
+
+    def real_unpack(self, dst):
+        args, cwd = self.get_args_and_cwd(dst)
+        tar = subprocess.Popen(['tar', 'x'], cwd=cwd,
+                               stderr=subprocess.PIPE,
+                               stdin=subprocess.PIPE)
+        xz = subprocess.Popen(args, stdout=subprocess.PIPE, cwd=cwd)
+        while 1:
+            chunk = xz.stdout.read(131072)
+            if not chunk:
+                break
+            tar.stdin.write(chunk)
+        tar.stdin.close()
+        xz.stdout.close()
+        for proc in tar, xz:
+            rv = proc.wait()
+            if rv != 0:
+                return rv
+            return 0
+
+
+@register_unpacker
 class GzipUnpacker(SingleInplaceUnpacker):
     name = 'Gzip Compressed Files'
     filename_patterns = ['*.gz']
@@ -303,6 +330,15 @@ class Bz2Unpacker(SingleInplaceUnpacker):
     executable = 'bunzip2'
     args = ['-c', FILENAME]
     mimetypes = ['application/x-bzip2']
+
+
+@register_unpacker
+class XZUnpacker(SingleInplaceUnpacker):
+    name = 'XZ Compressed Files'
+    filename_patterns = ['*.xz']
+    executable = 'unxz'
+    args = ['-c', FILENAME]
+    mimetypes = ['application/x-xz']
 
 
 @register_unpacker
