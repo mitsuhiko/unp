@@ -29,6 +29,8 @@ $ unp_
   - Uncompressed Tarballs (*.tar)
   - WinRAR Archives (*.rar)
   - Zip Archives (*.zip; *.egg; *.whl; *.jar)
+  - XZ Compressed Tarballs (*.tar.xz)
+  - XZ Compressed Files (*.xz)
 
   DMG is only supported on OS X where it invokes the hdiutil and
   copies out the contents.
