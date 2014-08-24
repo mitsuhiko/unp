@@ -111,7 +111,7 @@ class UnpackerBase(object):
             pieces = match.groups()
             if pieces and pieces[-1].startswith('.'):
                 return ''.join(pieces[:-1])
-        return os.path.basename(self.filename).split('.', 1)[0]
+        return os.path.basename(self.filename).rsplit('.', 1)[0]
 
     def assert_available(self):
         if self.find_executable() is not None:
@@ -267,6 +267,7 @@ class TarUnpacker(Unpacker):
     executable = 'tar'
     args = ['xvf', FILENAME]
     stream_processor = tar_stream_processor
+    mimetypes = ['application/x-tar']
 
 
 @register_unpacker
