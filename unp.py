@@ -384,6 +384,20 @@ class P7ZipUnpacker(Unpacker):
     )
 
 
+@register_unpacker
+class CabUnpacker(Unpacker):
+    name = 'Windows Cabinet Archive'
+    filename_patterns = ['*.cab']
+    executable = 'cabextract'
+    args = ['-f', FILENAME]
+    mimetypes = ['application/vnd.ms-cab-compressed']
+    brew_package = 'cabextract'
+    stream_processor = StreamProcessor(
+        format=r'^  extracting (.*?)$',
+        stream='stdout',
+    )
+
+
 class DMGUnpacker(UnpackerBase):
     name = 'Apple Disk Image'
     filename_patterns = ['*.dmg', '*.sparseimage']
