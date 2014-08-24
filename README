@@ -21,6 +21,7 @@ $ unp_
   Supports the following archives:
 
   - 7zip Archives (*.7z)
+  - AR Archives (*.a)
   - Apple Disk Image (*.dmg; *.sparseimage)
   - Bz2 Compressed Files (*.bz2)
   - Bz2 Compressed Tarballs (*.tar.bz2)
@@ -28,10 +29,10 @@ $ unp_
   - Gzip Compressed Tarballs (*.tar.gz; *.tgz)
   - Uncompressed Tarballs (*.tar)
   - WinRAR Archives (*.rar)
-  - Zip Archives (*.zip; *.egg; *.whl; *.jar)
-  - XZ Compressed Tarballs (*.tar.xz)
-  - XZ Compressed Files (*.xz)
   - Windows Cabinet Archive (*.cab)
+  - XZ Compressed Files (*.xz)
+  - XZ Compressed Tarballs (*.tar.xz)
+  - Zip Archives (*.zip; *.egg; *.whl; *.jar)
 
   DMG is only supported on OS X where it invokes the hdiutil and
   copies out the contents.

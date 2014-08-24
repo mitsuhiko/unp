@@ -398,6 +398,19 @@ class CabUnpacker(Unpacker):
     )
 
 
+@register_unpacker
+class ArUnpacker(Unpacker):
+    name = 'AR Archives'
+    filename_patterns = ['*.a']
+    executable = 'ar'
+    args = ['-vx', FILENAME]
+    mimetypes = ['application/x-archive']
+    stream_processor = StreamProcessor(
+        format=r'^x - (.*?)$',
+        stream='stdout',
+    )
+
+
 class DMGUnpacker(UnpackerBase):
     name = 'Apple Disk Image'
     filename_patterns = ['*.dmg', '*.sparseimage']
