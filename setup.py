@@ -8,6 +8,7 @@ setup(
     url='http://github.com/mitsuhiko/unp',
     author='Armin Ronacher',
     author_email='armin.ronacher@active-4.com',
+    description='Command line tool that can unpack archives easily',
     py_modules=['unp'],
     install_requires=[
         'click>=3.0',
