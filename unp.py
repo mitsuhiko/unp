@@ -74,6 +74,7 @@ class StreamProcessor(object):
 
 
 class UnpackerBase(object):
+    id = None
     name = None
     executable = None
     filename_patterns = ()
@@ -263,6 +264,7 @@ tar_stream_processor = StreamProcessor(
 
 @register_unpacker
 class TarUnpacker(Unpacker):
+    id = 'tar'
     name = 'Uncompressed Tarballs'
     filename_patterns = ['*.tar']
     executable = 'tar'
@@ -273,6 +275,7 @@ class TarUnpacker(Unpacker):
 
 @register_unpacker
 class TarGzUnpacker(Unpacker):
+    id = 'tgz'
     name = 'Gzip Compressed Tarballs'
     filename_patterns = ['*.tar.gz', '*.tgz']
     executable = 'tar'
@@ -282,6 +285,7 @@ class TarGzUnpacker(Unpacker):
 
 @register_unpacker
 class TarBz2Unpacker(Unpacker):
+    id = 'tbz2'
     name = 'Bz2 Compressed Tarballs'
     filename_patterns = ['*.tar.bz2']
     executable = 'tar'
@@ -291,6 +295,7 @@ class TarBz2Unpacker(Unpacker):
 
 @register_unpacker
 class TarXZUnpacker(UnpackerBase):
+    id = 'txz'
     name = 'XZ Compressed Tarballs'
     filename_patterns = ['*.tar.xz']
     executable = 'unxz'
@@ -319,6 +324,7 @@ class TarXZUnpacker(UnpackerBase):
 
 @register_unpacker
 class GzipUnpacker(SingleInplaceUnpacker):
+    id = 'gz'
     name = 'Gzip Compressed Files'
     filename_patterns = ['*.gz']
     executable = 'gunzip'
@@ -328,6 +334,7 @@ class GzipUnpacker(SingleInplaceUnpacker):
 
 @register_unpacker
 class Bz2Unpacker(SingleInplaceUnpacker):
+    id = 'bz2'
     name = 'Bz2 Compressed Files'
     filename_patterns = ['*.bz2']
     executable = 'bunzip2'
@@ -337,6 +344,7 @@ class Bz2Unpacker(SingleInplaceUnpacker):
 
 @register_unpacker
 class XZUnpacker(SingleInplaceUnpacker):
+    id = 'xz'
     name = 'XZ Compressed Files'
     filename_patterns = ['*.xz']
     executable = 'unxz'
@@ -347,6 +355,7 @@ class XZUnpacker(SingleInplaceUnpacker):
 
 @register_unpacker
 class ZipUnpacker(Unpacker):
+    id = 'zip'
     name = 'Zip Archives'
     filename_patterns = ['*.zip', '*.egg', '*.whl', '*.jar']
     executable = 'unzip'
@@ -360,6 +369,7 @@ class ZipUnpacker(Unpacker):
 
 @register_unpacker
 class RarUnpacker(Unpacker):
+    id = 'rar'
     name = 'WinRAR Archives'
     filename_patterns = ['*.rar']
     executable = 'unrar'
@@ -374,6 +384,7 @@ class RarUnpacker(Unpacker):
 
 @register_unpacker
 class P7ZipUnpacker(Unpacker):
+    id = '7z'
     name = '7zip Archives'
     filename_patterns = ['*.7z']
     executable = '7z'
@@ -388,6 +399,7 @@ class P7ZipUnpacker(Unpacker):
 
 @register_unpacker
 class CabUnpacker(Unpacker):
+    id = 'cab'
     name = 'Windows Cabinet Archive'
     filename_patterns = ['*.cab']
     executable = 'cabextract'
@@ -402,6 +414,7 @@ class CabUnpacker(Unpacker):
 
 @register_unpacker
 class ArUnpacker(Unpacker):
+    id = 'ar'
     name = 'AR Archives'
     filename_patterns = ['*.a']
     executable = 'ar'
@@ -414,6 +427,7 @@ class ArUnpacker(Unpacker):
 
 
 class DMGUnpacker(UnpackerBase):
+    id = 'dmg'
     name = 'Apple Disk Image'
     filename_patterns = ['*.dmg', '*.sparseimage']
     executable = 'hdiutil'
@@ -460,9 +474,6 @@ if sys.platform == 'darwin':
 def get_unpacker_class(filename):
     uifn = click.format_filename(filename)
 
-    if not os.path.isfile(filename):
-        raise click.UsageError('Could not find file "%s".' % uifn)
-
     for unpacker_cls in unpackers:
         if unpacker_cls.filename_matches(filename):
             return unpacker_cls
@@ -478,24 +489,25 @@ def list_unpackers(ctx, param, value):
     if not value:
         return
 
-    executables = {}
-    for unpacker in unpackers:
-        exe = unpacker.find_executable()
-        if exe is None:
-            exe = unpacker.executable + '*'
-        executables.setdefault(exe, []).append(unpacker)
-    executables = sorted(executables.items(),
-                         key=lambda x: os.path.basename(x[0]).lower())
-
-    for idx, (executable, unps) in enumerate(executables):
-        if idx:
-            click.echo()
-        click.echo(executable)
-        for unpacker in unps:
-            click.echo('  - %s (%s)' % (unpacker.name,
-                                        '; '.join(unpacker.filename_patterns)))
+    for unpacker in sorted(unpackers, key=lambda x: x.name.lower()):
+        if unpacker.find_executable() is None:
+            continue
+        click.echo('- %- 5s %s (%s)' % (
+            unpacker.id,
+            unpacker.name,
+            '; '.join(unpacker.filename_patterns),
+        ))
 
     ctx.exit()
+
+
+def select_unpacker(ctx, param, value):
+    if value is None:
+        return value
+    for unpacker in unpackers:
+        if unpacker.id == value.lower():
+            return unpacker
+    raise click.BadParameter('Unknown unpacker.')
 
 
 @click.command()
@@ -505,17 +517,21 @@ def list_unpackers(ctx, param, value):
 @click.option('-o', '--output', type=click.Path(),
               help='Defines the output folder.  '
               'Defaults to the working directory.')
+@click.option('--unpacker', 'forced_unpacker', callback=select_unpacker,
+              metavar='UNPACKER',
+              help='Overrides the automatically detected unpacker.  For '
+              'a list of available unpackers see "--list-unpackers".')
+@click.option('--list-unpackers', is_flag=True, expose_value=False,
+              callback=list_unpackers,
+              help='Lists all supported and available unpackers.')
 @click.option('--dump-command', is_flag=True,
               help='Instead of executing the unpacker it prints out the '
               'command that would be executed.  This is useful for '
               'debugging broken archives usually.  Note that this command '
               'when executed directly might spam your current working '
               'directory!')
-@click.option('--list-unpackers', is_flag=True, expose_value=False,
-              callback=list_unpackers,
-              help='Lists all supported unpackers.')
 @click.version_option()
-def cli(files, silent, output, dump_command):
+def cli(files, silent, output, dump_command, forced_unpacker):
     """unp is a super simple command line application that can unpack a lot
     of different archives.  No matter if you unpack a zip or tarball, the
     syntax for doing it is the same.  Unp will also automatically ensure
@@ -533,7 +549,13 @@ def cli(files, silent, output, dump_command):
 
     for filename in files:
         filename = os.path.realpath(filename)
-        unpacker_cls = get_unpacker_class(filename)
+        if not os.path.isfile(filename):
+            raise click.UsageError('Could not find file "%s".' %
+                                   click.format_filename(filename))
+        if forced_unpacker is not None:
+            unpacker_cls = forced_unpacker
+        else:
+            unpacker_cls = get_unpacker_class(filename)
         unpackers.append(unpacker_cls(filename, silent=silent))
 
     for unpacker in unpackers:
