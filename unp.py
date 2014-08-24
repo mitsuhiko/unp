@@ -187,7 +187,7 @@ class UnpackerBase(object):
 
         try:
             import shutil
-            shutil.rmdir(dst)
+            shutil.rmtree(dst)
         except Exception:
             pass
 
@@ -207,8 +207,9 @@ class UnpackerBase(object):
         tmp_dir = tempfile.mkdtemp(prefix='.' + self.basename, dir=dst)
         try:
             if self.real_unpack(tmp_dir) != 0:
-                raise click.UsageError('Unpacking through %s failed.'
-                                       % self.executable)
+                click.secho('Error: unpacking through %s failed.'
+                            % self.executable, fg='red')
+                sys.exit(2)
 
             final = self.finish_unpacking(tmp_dir, dst)
             if not self.silent:
