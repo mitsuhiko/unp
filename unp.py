@@ -124,7 +124,7 @@ class UnpackerBase(object):
         )]
         if sys.platform == 'darwin' and self.brew_package is not None:
             msgs.extend((
-                'You can install the unpacker threw brew:',
+                'You can install the unpacker using brew:',
                 '',
                 '    $ brew install %s' % self.brew_package,
             ))
